@@ -396,12 +396,11 @@
                 </div>
             </div>
 
-            <button type="submit" class="submit-btn">Fang offline speichern</button>
+         <button type="button" class="submit-btn" onclick="verarbeiteNeuenFang()">Fang speichern</button>
         </form>
     </div>
 </div>
-
-<script>
+<script>  
     // OFFLINE-DATENBANK: Berechnet Gewichte und Schonzeiten an der Ruhr.
     const fischDatenbank = {
         "Bachforelle": { mass: 25, k: 1.1, schonzeit: { vonM: 9, vonD: 20, bisM: 2, bisD: 15 }, bildData: "" },
