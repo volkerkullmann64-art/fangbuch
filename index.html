@@ -672,8 +672,9 @@
     function updateSyncBadge() {
         const offlineWarteschlange = JSON.parse(localStorage.getItem('offlineFange')) || [];
         const badge = document.getElementById('sync-status');
-        if(offlineWarteschlange.length > 0) {
-            badge.innerText = `⚠️ ${offlineWarteschlange.length} Fang/Fänge ungesichert auf dem Handy! (Wird im WLAN übertragen)`;
+        if (offlineWarteschlange.length > 0) {
+            badge.innerHTML = `⚠️ ${offlineWarteschlange.length} Fang/Fänge ungesichert auf dem Handy! <br>
+                               <button type="button" onclick="trySyncOfflineFange()" style="margin-top:8px; padding:6px 12px; background:#d68c45; color:white; border:none; border-radius:4px; font-weight:bold; cursor:pointer;">Jetzt zu Supabase senden 🚀</button>`;
             badge.style.display = 'block';
         } else {
             badge.style.display = 'none';
@@ -682,7 +683,10 @@
 
     async function trySyncOfflineFange() {
         updateSyncBadge();
-        if (!navigator.onLine) return;
+        if (!navigator.onLine) {
+            alert("Du bist aktuell komplett offline. Verbinde dich mit dem Internet, um die Fänge zu senden!");
+            return;
+        }
 
         let offlineWarteschlange = JSON.parse(localStorage.getItem('offlineFange')) || [];
         if (offlineWarteschlange.length === 0) return;
@@ -693,6 +697,7 @@
             const { error } = await _supabase.from('faenge').insert([fang]);
             if (error) {
                 console.error("Fehler beim Übertragen eines Fangs:", error.message);
+                alert("Fehler bei der Übertragung: " + error.message);
                 return;
             }
         }
@@ -700,10 +705,8 @@
         localStorage.removeItem('offlineFange');
         updateSyncBadge();
         console.log("Synchronisation mit Supabase erfolgreich abgeschlossen!");
-        alert("🎉 Alle Offline-Fänge wurden erfolgreich mit der Datenbank synchronisiert!");
+        alert("🎉 Alle Offline-Fänge wurden erfolgreich mit deiner Supabase-Datenbank synchronisiert!");
     }
-
-    window.addEventListener('online', trySyncOfflineFange);
 
     const SUPABASE_URL = "https://sb_publishable_Y0g8anBpKs3bsC85iado6w_rYske-SZ.supabase.co";
     const SUPABASE_KEY = "sb_publishable_Y0g8anBpKs3bsC85iado6w_rYske-SZ";
