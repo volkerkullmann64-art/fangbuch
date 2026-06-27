@@ -708,7 +708,7 @@
                 truebung: fang.truebung
             };
 
-            const { error } = await _supabase.from('fangbuch_asv_langschede').insert([datenFurSupabase]);
+            const { error } = await _supabase.from('fangbuch-asv-langschede').insert([datenFurSupabase]);
             if (error) {
                 console.error("Fehler:", error.message);
                 alert("Supabase meldet Fehler: " + error.message);
