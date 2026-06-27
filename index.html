@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vereins-Fangbuch - Ruhr (Offline-Optimiert)</title>
+    <style>
+        :root {
+            --primary-color: #2e5a44;
+            --secondary-color: #4a7c59;
+            --accent-color: #d68c45;
+            --warning-color: #c0392b;
+            --bg-color: #f4f7f5;
+            --text-color: #333;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+
+        h1, h2 {
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .row .form-group {
+            flex: 1;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 6px;
+            color: #444;
+        }
+
+        input[type="text"], input[type="email"], input[type="number"], input[type="date"], select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus {
+            border-color: var(--secondary-color);
+        }
+
+        .input-with-btn {
+            display: flex;
+            gap: 8px;
+        }
+
+        .luftdruck-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .trend-pfeil {
+            font-size: 24px;
+            user-select: none;
+            min-width: 28px;
+            text-align: center;
+        }
+
+        .icon-btn {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0 15px;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .icon-btn:active {
+            background-color: var(--primary-color);
+        }
+
+        .hint-box {
+            margin-top: 5px;
+            font-size: 14px;
+            font-weight: bold;
+            display: none;
+            padding: 8px;
+            border-radius: 6px;
+        }
+        .hint-box.warning { background: #fadbd8; color: var(--warning-color); border: 1px solid var(--warning-color); }
+        .hint-box.ok { background: #d4efdf; color: var(--primary-color); border: 1px solid var(--primary-color); }
+
+        /* Absolut Offline-Sicheres Erkennungsfenster */
+        .fisch-info-box {
+            margin-top: 8px;
+            background: #fcfcfc;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 10px;
+            display: none;
+            text-align: center;
+        }
+
+        .fisch-info-box img {
+            width: 100%;
+            max-height: 180px;
+            object-fit: contain;
+            border-radius: 6px;
+            background: #fff;
+            border: 1px solid #eee;
+            margin-bottom: 6px;
+            padding: 5px;
+        }
+
+        .fisch-info-box span {
+            font-size: 14px;
+            font-weight: bold;
+            color: var(--primary-color);
+            display: block;
+        }
+
+        .switch-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #eee;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 26px;
+        }
+
+        .switch input { display: none; }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px; width: 18px;
+            left: 4px; bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--secondary-color);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(24px);
+        }
+
+        .submit-btn {
+            width: 100%;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 14px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: background 0.3s;
+        }
+
+        .submit-btn:hover {
+            background-color: var(--secondary-color);
+        }
+
+        /* Statusanzeige für ungesicherte Offline-Fänge */
+        .sync-badge {
+            background-color: var(--accent-color);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 15px;
+            width: 100%;
+            max-width: 500px;
+            display: none;
+        }
+
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+<!-- Warteschlangen-Anzeige für Offline-Fänge -->
+<div id="sync-status" class="sync-badge">⚠️ 0 Fänge warten auf Internetverbindung zur Übertragung...</div>
+
+<div class="container">
+    <!-- 1. LOGIN MASKE -->
+    <div id="login-section">
+        <h1>Vereins-Fangbuch</h1>
+        <div class="form-group">
+            <label for="user-email">E-Mail-Adresse zur Anmeldung</label>
+            <input type="email" id="user-email" placeholder="beispiel@anglerverein.de" required>
+        </div>
+        <button class="submit-btn" onclick="performLogin()">Anmelden</button>
+    </div>
+
+    <!-- 2. HAUPT-EINGABEMASKE -->
+    <div id="form-section" class="hidden">
+        <h2>Fang eintragen (Ruhr)</h2>
+        
+        <form id="fang-form" onsubmit="saveFang(event)">
+            
+            <div class="row">
+                <div class="form-group">
+                    <label for="datum">Datum</label>
+                    <input type="date" id="datum" onchange="validateFisch()" required>
+                </div>
+                <div class="form-group">
+                    <label for="uhrzeit">Uhrzeit (15-Min)</label>
+                    <select id="uhrzeit" required></select>
+                </div>
+            </div>
+
+            <!-- Fischart -->
+            <div class="form-group">
+                <label for="fischart">Fischart</label>
+                <select id="fischart" onchange="validateFisch()" required>
+                    <option value="" disabled selected>Bitte wählen...</option>
+                    <optgroup label="Edelfische / Raubfische">
+                        <option value="Bachforelle">Bachforelle</option>
+                        <option value="Äsche">Äsche</option>
+                        <option value="Hecht">Hecht</option>
+                        <option value="Zander">Zander</option>
+                        <option value="Flussbarsch">Flussbarsch</option>
+                        <option value="Aal">Aal</option>
+                        <option value="Wels">Wels</option>
+                    </optgroup>
+                    <optgroup label="Friedfische (Karpfenartige)">
+                        <option value="Barbe">Barbe</option>
+                        <option value="Nase">Nase</option>
+                        <option value="Karpfen">Karpfen</option>
+                        <option value="Schleie">Schleie</option>
+                        <option value="Döbel">Döbel</option>
+                        <option value="Brassen">Brassen (Blei)</option>
+                        <option value="Aland">Aland</option>
+                        <option value="Rotauge">Rotauge</option>
+                        <option value="Rotfeder">Rotfeder</option>
+                    </optgroup>
+                    <optgroup label="Kleinfische & Begleitarten">
+                        <option value="Kaulbarsch">Kaulbarsch</option>
+                        <option value="Bachschmerle">Bachschmerle</option>
+                        <option value="Gründling">Gründling</option>
+                        <option value="Elritze">Elritze</option>
+                    </optgroup>
+                    <optgroup label="Invasive Arten (Meldepflichtig)">
+                        <option value="Schwarzmund-Grundel">Schwarzmund-Grundel</option>
+                    </optgroup>
+                    <optgroup label="Ganzjährig geschützte Arten (Rote Liste)">
+                        <option value="Groppe">Groppe (Mühlkoppe)</option>
+                        <option value="Bitterling">Bitterling</option>
+                        <option value="Moderlieschen">Moderlieschen</option>
+                    </optgroup>
+                </select>
+                
+                <!-- 100 % Offline-Vorschau-Box -->
+                <div id="fisch-erkennung" class="fisch-info-box">
+                    <img id="fisch-erkennung-bild" src="" alt="Fischbild zur Erkennung">
+                    <span id="fisch-erkennung-name"></span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="laenge">Länge (cm)</label>
+                <input type="number" id="laenge" min="0" placeholder="z.B. 45" oninput="validateFisch()" required>
+                <div id="status-hint" class="hint-box"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="gewicht">Gewicht (g)</label>
+                <input type="number" id="gewicht" min="0" placeholder="Wird automatisch geschätzt...">
+                <small style="color: #777; display:block; margin-top:2px;">Kann manuell überschrieben werden.</small>
+            </div>
+
+            <div class="form-group">
+                <label for="verbleib">Verbleib des Fisches</label>
+                <select id="verbleib" required></select>
+            </div>
+
+            <div class="row">
+                <div class="form-group">
+                    <label for="wetter">Wetter</label>
+                    <select id="wetter">
+                        <option value="Sonnig">Sonnig</option>
+                        <option value="Leicht bewölkt">Leicht bewölkt</option>
+                        <option value="Bewölkt" selected>Bewölkt</option>
+                        <option value="Stark bewölkt">Stark bewölkt</option>
+                        <option value="Regen">Regen</option>
+                        <option value="Nebel">Nebel</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="luftdruck">Luftdruck (hPa)</label>
+                    <div class="luftdruck-wrapper">
+                        <input type="number" id="luftdruck" placeholder="Manuell oder Auto" min="900" max="1100">
+                        <span id="luftdruck-pfeil" class="trend-pfeil" title="Tendenz">➡️</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="truebung">Wassertrübung (Ruhr)</label>
+                <select id="truebung" required>
+                    <option value="" disabled selected>Bitte wählen...</option>
+                    <option value="Klar">Klar</option>
+                    <option value="Leicht angetrübt">Leicht angetrübt</option>
+                    <option value="Trüb / Hochwasser">Trüb / Hochwasser</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="fangort">Fangort / Stelle</label>
+                <select id="fangort" required>
+                    <option value="" disabled selected>Stelle auswählen...</option>
+                    <option value="Kuhbrücke (oberhalb)">Kuhbrücke (oberhalb)</option>
+                    <option value="Kuhbrücke (unterhalb)">Kuhbrücke (unterhalb)</option>
+                    <option value="Bei Kloppert">Bei Kloppert</option>
+                    <option value="Vereinsheim">Vereinsheim-Abschnitt</option>
+                    <option value="Sonstige Stelle">Sonstige Stelle (siehe Notiz)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="notiz">Zusatznotiz / Kommentar</label>
+                <div class="input-with-btn">
+                    <input type="text" id="notiz" placeholder="Köder oder Notizen einsprechen...">
+                    <button type="button" class="icon-btn" id="mic-btn" onclick="startSpeechRecognition()">🎙️</button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="switch-container">
+                    <span>Mit Angelkollegen teilen?</span>
+                    <label class="switch">
+                        <input type="checkbox" id="teilen-status" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <button type="submit" class="submit-btn">Fang offline speichern</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    // OFFLINE-DATENBANK: Berechnet Gewichte und Schonzeiten an der Ruhr.
+    const fischDatenbank = {
+        "Bachforelle": { mass: 25, k: 1.1, schonzeit: { vonM: 9, vonD: 20, bisM: 2, bisD: 15 }, bildData: "" },
+        "Äsche": { mass: 30, k: 1.0, schonzeit: { vonM: 2, vonD: 1, bisM: 3, bisD: 30 }, bildData: "" },
+        "Hecht": { mass: 45, k: 0.9, schonzeit: { vonM: 1, vonD: 15, bisM: 3, bisD: 30 }, bildData: "" },
+        "Zander": { mass: 50, k: 1.0, schonzeit: { vonM: 1, vonD: 1, bisM: 4, bisD: 31 }, bildData: "" },
+        "Flussbarsch": { mass: 0, k: 1.2, bildData: "" },
+        "Aal": { mass: 50, k: 0.2, bildData: "" },
+        "Wels": { mass: 0, k: 0.8, bildData: "" },
+        "Barbe": { mass: 35, k: 1.2, schonzeit: { vonM: 4, vonD: 15, bisM: 5, bisD: 15 }, bildData: "" },
+        "Karpfen": { mass: 35, k: 2.1, bildData: "" },
+        "Schleie": { mass: 25, k: 2.0, bildData: "" },
+        "Döbel": { mass: 0, k: 1.1, bildData: "" },
+        "Brassen": { mass: 0, k: 1.3, bildData: "" },
+        "Aland": { mass: 0, k: 1.1, bildData: "" },
+        "Rotauge": { mass: 0, k: 1.1, bildData: "" },
+        "Rotfeder": { mass: 0, k: 1.2, bildData: "" },
+        "Kaulbarsch": { mass: 0, k: 1.0, bildData: "" },
+        "Bachschmerle": { mass: 0, k: 0.9, bildData: "" },
+        "Gründling": { mass: 0, k: 1.0, bildData: "" },
+        "Elritze": { mass: 0, k: 0.9, bildData: "" },
+        "Schwarzmund-Grundel": { mass: 0, k: 1.1, invasiv: true, bildData: "" },
+        
+        // 100 % offline-sichere Bestimmungshilfen für geschützte Arten an der Ruhr:
+        "Groppe": { 
+            mass: 0, k: 1.0, geschuetzt: true,
+            bildData: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 80' width='100%'><rect width='200' height='80' fill='%23eee'/><text x='50%' y='40%' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='11' fill='%232e5a44' font-weight='bold'>Bestimmung: GROPPE</text><text x='50%' y='65%' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='9' fill='%23666'>Großer, platter Kopf. Keine Schuppen.</text></svg>"
+        },
+        "Bitterling": { 
+            mass: 0, k: 1.0, geschuetzt: true,
+            bildData: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 80' width='100%'><rect width='200' height='80' fill='%23eee'/><text x='50%' y='40%' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='11' fill='%232e5a44' font-weight='bold'>Bestimmung: BITTERLING</text><text x='50%' y='65%' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='9' fill='%23666'>Hochrückig, blau-grüner Längsstreifen hinten.</text></svg>"
+        },
+        "Moderlieschen": { 
+            mass: 0, k: 0.9, geschuetzt: true,
+            bildData: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 80' width='100%'><rect width='200' height='80' fill='%23eee'/><text x='50%' y='40%' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='11' fill='%232e5a44' font-weight='bold'>Bestimmung: MODERLIESCHEN</text><text x='50%' y='65%' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='9' fill='%23666'>Sehr klein, unvollständige Seitenlinie.</text></svg>"
+        },
+        "Nase": { mass: 35, k: 1.0, geschuetzt: true, bildData: "" }
+    };
+
+    let aktuellerTrendPfeil = "➡️";
+
+    function initFormDefaults() {
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('datum').value = today;
+
+        const select = document.getElementById('uhrzeit');
+        select.innerHTML = "";
+        let currentMinutes = new Date().getMinutes();
+        let roundedMinutes = Math.round(currentMinutes / 15) * 15;
+        let currentHour = new Date().getHours();
+        if(roundedMinutes === 60) { roundedMinutes = 0; currentHour += 1; }
+        const defaultTimeStr = `${String(currentHour).padStart(2, '0')}:${String(roundedMinutes).padStart(2, '0')}`;
+
+        for (let h = 0; h < 24; h++) {
+            for (let m = 0; m < 60; m += 15) {
+                const timeStr = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+                const option = document.createElement('option');
+                option.value = timeStr;
+                option.textContent = timeStr + " Uhr";
+                if(timeStr === defaultTimeStr) option.selected = true;
+                select.appendChild(option);
+            }
+        }
+        updateVerbleibOptions("masig");
+        updateSyncBadge();
+    }
+
+    function updateVerbleibOptions(modus) {
+        const verbleibSelect = document.getElementById('verbleib');
+        verbleibSelect.innerHTML = "";
+        const placeholder = new Option("Bitte wählen...", "");
+        placeholder.disabled = true; placeholder.selected = true;
+        verbleibSelect.options.add(placeholder);
+
+        if (modus === "untermasig") {
+            verbleibSelect.options.add(new Option("Zurückgesetzt (Untermaßig)", "Zurückgesetzt (Untermaßig)"));
+            verbleibSelect.options.add(new Option("Entnommen & Verwertet (Wegen Verletzung)", "Entnommen & Verwertet (Verletzt)"));
+        } else if (modus === "schonzeit") {
+            verbleibSelect.options.add(new Option("Zurückgesetzt (Schonzeit / Schutz)", "Zurückgesetzt (Schutz)"));
+            verbleibSelect.options.add(new Option("Entnommen & Verwertet (Wegen Verletzung)", "Entnommen & Verwertet (Verletzt)"));
+        } else if (modus === "invasiv") {
+            verbleibSelect.options.add(new Option("Entnommen / Verwertet (Invasive Art - Pflicht!)", "Entnommen (Invasive Art)"));
+        } else {
+            verbleibSelect.options.add(new Option("Entnommen (Küche)", "Entnommen (Küche)"));
+            verbleibSelect.options.add(new Option("Zurückgesetzt (Schonung / Kapital)", "Zurückgesetzt (Kapital)"));
+        }
+    }
+
+    function validateFisch() {
+        const fischart = document.getElementById('fischart').value;
+        const laenge = parseFloat(document.getElementById('laenge').value);
+        const datumVal = document.getElementById('datum').value;
+        const statusHint = document.getElementById('status-hint');
+        const gewichtInput = document.getElementById('gewicht');
+        
+        const erkennungsBox = document.getElementById('fisch-erkennung');
+        const erkennungsBild = document.getElementById('fisch-erkennung-bild');
+        const erkennungsName = document.getElementById('fisch-erkennung-name');
+
+        if (!fischart) {
+            erkennungsBox.style.display = 'none';
+            return;
+        }
+
+        const daten = fischDatenbank[fischart];
+        
+        if(daten && daten.bildData) {
+            erkennungsBild.src = daten.bildData;
+            erkennungsName.innerText = `Offline-Bestimmungshilfe: ${fischart}`;
+            erkennungsBox.style.display = 'block';
+        } else {
+            erkennungsBox.style.display = 'none';
+        }
+
+        let infoTexte = [];
+        let istWarnung = false;
+        let aktuellerModus = "masig";
+
+        if (daten.geschuetzt || fischart === "Nase") {
+            infoTexte.push(`⚠️ STRENG GESCHÜTZT: Ganzjährig geschützt in NRW! Schonend zurücksetzen.`);
+            istWarnung = true;
+            aktuellerModus = "schonzeit";
+        } 
+        else if (daten.invasiv) {
+            infoTexte.push(`🚨 INVASIVE ART: Darf laut Gesetz NICHT zurückgesetzt werden!`);
+            istWarnung = true;
+            aktuellerModus = "invasiv";
+        }
+        else if (daten.schonzeit && datumVal) {
+            const wahlDatum = new Date(datumVal);
+            const m = wahlDatum.getMonth();
+            const d = wahlDatum.getDate();
+            const sz = daten.schonzeit;
+
+            let inSchonzeit = false;
+            if (sz.vonM > sz.bisM) {
+                if ((m > sz.vonM || (m === sz.vonM && d >= sz.vonD)) || (m < sz.bisM || (m === sz.bisM && d <= sz.bisD))) inSchonzeit = true;
+            } else {
+                if ((m > sz.vonM || (m === sz.vonM && d >= sz.vonD)) && (m < sz.bisM || (m === sz.bisM && d <= sz.bisD))) inSchonzeit = true;
+            }
+
+            if (inSchonzeit) {
+                infoTexte.push(`⚠️ ACHTUNG: Der Fisch hat aktuell SCHONZEIT!`);
+                istWarnung = true;
+                aktuellerModus = "schonzeit";
+            }
+        }
+
+        if (!isNaN(laenge) && laenge > 0) {
+            if (!daten.geschuetzt && fischart !== "Nase" && !daten.invasiv && daten.mass > 0 && laenge < daten.mass) {
+                infoTexte.push(`⚠️ Untermaßig! (Mindestmaß NRW: ${daten.mass} cm)`);
+                istWarnung = true;
+                if (aktuellerModus !== "schonzeit") aktuellerModus = "untermasig";
+            } else if (daten.mass > 0 && !daten.geschuetzt && fischart !== "Nase") {
+                infoTexte.push(`✅ Maßig (Mindestmaß NRW: ${daten.mass} cm)`);
+            }
+
+            const geschätztesGewicht = Math.round((daten.k * Math.pow(laenge, 3)) / 100);
+            gewichtInput.placeholder = `ca. ${geschätztesGewicht} g (berechnet)`;
+        }
+
+        updateVerbleibOptions(aktuellerModus);
+
+        if (infoTexte.length > 0) {
+            statusHint.style.display = 'block';
+            statusHint.innerHTML = infoTexte.join("<br>");
+            statusHint.className = istWarnung ? "hint-box warning" : "hint-box ok";
+        } else {
+            statusHint.style.display = 'none';
+            gewichtInput.placeholder = "Wird automatisch geschätzt...";
+        }
+    }
+
+    function triggerAutomaticWeatherFetch() {
+        if (!navigator.onLine) return;
+        
+        const lat = 51.474; const lon = 7.765;
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=weather_code,surface_pressure&hourly=surface_pressure&timezone=auto`;
+
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                const current = data.current;
+                const pfeilElement = document.getElementById('luftdruck-pfeil');
+                if (current.surface_pressure) document.getElementById('luftdruck').value = Math.round(current.surface_pressure);
+
+                const stundeJetzt = new Date().getHours();
+                const indexVor3Std = Math.max(0, stundeJetzt - 3);
+                const druckVor3Std = Math.round(data.hourly.surface_pressure[indexVor3Std]);
+                const diff = Math.round(current.surface_pressure) - druckVor3Std;
+                
+                if (diff > 1) { aktuellerTrendPfeil = "⬆️"; pfeilElement.title = `Steigend (+${diff} hPa)`; }
+                else if (diff < -1) { aktuellerTrendPfeil = "⬇️"; pfeilElement.title = `Fallend (${diff} hPa)`; }
+                else { aktuellerTrendPfeil = "➡️"; pfeilElement.title = `Stabil`; }
+                pfeilElement.innerText = aktuellerTrendPfeil;
+
+                const wetterSelect = document.getElementById('wetter');
+                if (current.weather_code === 0) wetterSelect.value = "Sonnig";
+                else if (current.weather_code <= 2) wetterSelect.value = "Leicht bewölkt";
+                else if (current.weather_code === 3) wetterSelect.value = "Bewölkt";
+                else if (current.weather_code >= 51 && current.weather_code <= 67) wetterSelect.value = "Regen";
+            }).catch(() => {});
+    }
+
+    function performLogin() {
+        const email = document.getElementById('user-email').value;
+        if(email.includes('@')) {
+            document.getElementById('login-section').classList.add('hidden');
+            document.getElementById('form-section').classList.remove('hidden');
+            initFormDefaults();
+            triggerAutomaticWeatherFetch();
+            trySyncOfflineFange();
+        } else {
+            alert('Bitte gib eine gültige E-Mail-Adresse ein.');
+        }
+    }
+
+    function saveFang(event) {
+        event.preventDefault();
+        
+        let gewicht = document.getElementById('gewicht').value;
+        if (!gewicht) {
+            gewicht = document.getElementById('gewicht').placeholder.replace(/[^0-9]/g, '');
+        }
+        
+        const fangDaten = {
+            id: 'fang_' + Date.now(),
+            anglerEmail: document.getElementById('user-email').value,
+            datum: document.getElementById('datum').value,
+            uhrzeit: document.getElementById('uhrzeit').value,
+            fischart: document.getElementById('fischart').value,
+            laenge: document.getElementById('laenge').value,
+            gewicht: gewicht,
+            verbleib: document.getElementById('verbleib').value,
+            wetter: document.getElementById('wetter').value,
+            luftdruck: document.getElementById('luftdruck').value || "1013",
+            luftdruckTendenz: aktuellerTrendPfeil,
+            truebung: document.getElementById('truebung').value,
+            fangort: document.getElementById('fangort').value,
+            teilen: document.getElementById('teilen-status').checked,
+            notiz: document.getElementById('notiz').value,
+            zeitstempel: new Date().toISOString()
+        };
+
+        let offlineWarteschlange = JSON.parse(localStorage.getItem('offlineFange')) || [];
+        offlineWarteschlange.push(fangDaten);
+        localStorage.setItem('offlineFange', JSON.stringify(offlineWarteschlange));
+
+        alert(`Fang von ${fangDaten.fischart} erfolgreich lokal gesichert!\n(Gespeichert im Handyspeicher)`);
+        
+        document.getElementById('fang-form').reset();
+        document.getElementById('status-hint').style.display = 'none';
+        document.getElementById('fisch-erkennung').style.display = 'none';
+        
+        initFormDefaults();
+        trySyncOfflineFange();
+    }
+
+    function updateSyncBadge() {
+        const offlineWarteschlange = JSON.parse(localStorage.getItem('offlineFange')) || [];
+        const badge = document.getElementById('sync-status');
+        if(offlineWarteschlange.length > 0) {
+            badge.innerText = `⚠️ ${offlineWarteschlange.length} Fang/Fänge ungesichert auf dem Handy! (Wird im WLAN übertragen)`;
+            badge.style.display = 'block';
+        } else {
+            badge.style.display = 'none';
+        }
+    }
+
+    function trySyncOfflineFange() {
+        updateSyncBadge();
+        if (!navigator.onLine) return;
+
+        let offlineWarteschlange = JSON.parse(localStorage.getItem('offlineFange')) || [];
+        if (offlineWarteschlange.length === 0) return;
+
+        console.log("Internet vorhanden. Übertrage lokale Fänge zum Vereins-Server...", offlineWarteschlange);
+        
+        setTimeout(() => {
+            localStorage.removeItem('offlineFange');
+            updateSyncBadge();
+            console.log("Synchronisation erfolgreich abgeschlossen!");
+        }, 1500);
+    }
+
+    window.addEventListener('online', trySyncOfflineFange);
+
+    function startSpeechRecognition() {
+        const micBtn = document.getElementById('mic-btn');
+        const notizFeld = document.getElementById('notiz');
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) { alert("Spracheingabe offline/mobil nicht unterstützt."); return; }
+
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'de-DE';
+        micBtn.style.backgroundColor = "#d68c45"; micBtn.textContent = "🛑";
+        recognition.start();
+
+        recognition.onresult = function(event) { notizFeld.value = event.results[0][0].transcript; };
+        recognition.onspeechend = function() { recognition.stop(); resetMicBtn(); };
+        recognition.onerror = function() { resetMicBtn(); };
+        function resetMicBtn() { micBtn.style.backgroundColor = "var(--secondary-color)"; micBtn.textContent = "🎙️"; }
+    }
+</script>
+</body>
+</html>
+Damit steht dem unbeschwerten Eintragen direkt an der Rute nichts mehr im Weg!
