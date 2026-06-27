@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="de">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>   
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -670,23 +671,34 @@
         }
     }
 
-    function trySyncOfflineFange() {
+    async function trySyncOfflineFange() {
         updateSyncBadge();
         if (!navigator.onLine) return;
 
         let offlineWarteschlange = JSON.parse(localStorage.getItem('offlineFange')) || [];
         if (offlineWarteschlange.length === 0) return;
 
-        console.log("Internet vorhanden. Übertrage lokale Fänge zum Vereins-Server...", offlineWarteschlange);
+        console.log("Internet vorhanden. Übertrage lokale Fänge zu Supabase...", offlineWarteschlange);
         
-        setTimeout(() => {
-            localStorage.removeItem('offlineFange');
-            updateSyncBadge();
-            console.log("Synchronisation erfolgreich abgeschlossen!");
-        }, 1500);
+        for (let fang of offlineWarteschlange) {
+            const { error } = await _supabase.from('faenge').insert([fang]);
+            if (error) {
+                console.error("Fehler beim Übertragen eines Fangs:", error.message);
+                return;
+            }
+        }
+
+        localStorage.removeItem('offlineFange');
+        updateSyncBadge();
+        console.log("Synchronisation mit Supabase erfolgreich abgeschlossen!");
+        alert("🎉 Alle Offline-Fänge wurden erfolgreich mit der Datenbank synchronisiert!");
     }
 
     window.addEventListener('online', trySyncOfflineFange);
+
+    const SUPABASE_URL = "https://sb_publishable_Y0g8anBpKs3bsC85iado6w_rYske-SZ.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_Y0g8anBpKs3bsC85iado6w_rYske-SZ";
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     function startSpeechRecognition() {
         const micBtn = document.getElementById('mic-btn');
