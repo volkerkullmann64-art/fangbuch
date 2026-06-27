@@ -638,7 +638,7 @@
         
         const fangDaten = {
             id: 'fang_' + Date.now(),
-            anglerEmail: document.getElementById('user-email').value,
+            angler_email: document.getElementById('user-email').value,
             datum: document.getElementById('datum').value,
             uhrzeit: document.getElementById('uhrzeit').value,
             fischart: document.getElementById('fischart').value,
@@ -681,33 +681,46 @@
         }
     } 
     async function trySyncOfflineFange() {
-        updateSyncBadge();
         if (!navigator.onLine) {
-            alert("Du bist aktuell komplett offline. Verbinde dich mit dem Internet, um die Fänge zu senden!");
+            alert("Du bist aktuell offline!");
             return;
         }
 
         let offlineWarteschlange = JSON.parse(localStorage.getItem('offlineFange')) || [];
         if (offlineWarteschlange.length === 0) return;
 
-        console.log("Internet vorhanden. Übertrage lokale Fänge zu Supabase...", offlineWarteschlange);
-        
         for (let fang of offlineWarteschlange) {
-            const { error } = await _supabase.from('faenge').insert([fang]);
+            // Hier bauen wir das Paket für Supabase zusammen
+            const datenFurSupabase = {
+                fischart: fang.fischart,
+                laenge: parseFloat(fang.laenge),
+                gewicht: parseFloat(fang.gewicht),
+                datum: fang.datum,
+                uhrzeit: fang.uhrzeit,
+                verbleib: fang.verbleib,
+                notiz: fang.notiz,
+                // WICHTIG: Links steht der Name der Spalte in Supabase (angler_email)
+                // Rechts holen wir uns den Wert aus dem Handyspeicher (fang.anglerEmail)
+                angler_email: fang.anglerEmail || fang.angler_email || 'v@v.com',
+                wetter: fang.wetter,
+                luftdruck: fang.luftdruck,
+                fangort: fang.fangort,
+                truebung: fang.truebung
+            };
+
+            const { error } = await _supabase.from('fangbuch_asv_langschede').insert([datenFurSupabase]);
             if (error) {
-                console.error("Fehler beim Übertragen eines Fangs:", error.message);
-                alert("Fehler bei der Übertragung: " + error.message);
+                console.error("Fehler:", error.message);
+                alert("Supabase meldet Fehler: " + error.message);
                 return;
             }
         }
 
         localStorage.removeItem('offlineFange');
         updateSyncBadge();
-        console.log("Synchronisation mit Supabase erfolgreich abgeschlossen!");
-        alert("🎉 Alle Offline-Fänge wurden erfolgreich mit deiner Supabase-Datenbank synchronisiert!");
+        alert("🎉 Klasse! Alle Offline-Fänge wurden erfolgreich zu Supabase übertragen!");
     }
-
-    const SUPABASE_URL = "https://sb_publishable_Y0g8anBpKs3bsC85iado6w_rYske-SZ.supabase.co";
+    const SUPABASE_URL = "https://eadleysrezkhxxbhqbdx.supabase.co";
     const SUPABASE_KEY = "sb_publishable_Y0g8anBpKs3bsC85iado6w_rYske-SZ";
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
