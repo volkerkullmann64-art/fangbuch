@@ -116,13 +116,8 @@
 </div>
 
 <script>
-    // ==========================================
-    // SUPABASE KONFIGURATION
-    // ==========================================
-    const SUPABASE_URL = 'https://YOUR_PROJECT_ID.supabase.co'; // Deine URL aus der index.html
-    const SUPABASE_KEY = 'YOUR_ANON_KEY';                    // Deinen KEY aus der index.html
     
-    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    
 
     window.onload = function() {
         pruefeAnglerUndLadeDaten();
@@ -159,7 +154,7 @@
             // Holt alle Fänge aus deiner Tabelle, sortiert nach Datum (neueste zuerst)
             // UND filtert exakt nach der E-Mail des Anglers!
             const { data, error } = await _supabase
-                .from('faenge')
+                .from('fangbuch-asv-langschede')
                 .select('*')
                 .eq('angler_email', email)
                 .order('datum', { ascending: false });
