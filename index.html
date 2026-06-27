@@ -465,7 +465,17 @@
             }
         }
         updateVerbleibOptions("masig");
-        updateSyncBadge();
+        function updateSyncBadge() {
+        const offlineWarteschlange = JSON.parse(localStorage.getItem('offlineFange')) || [];
+        const badge = document.getElementById('sync-status');
+        if(offlineWarteschlange.length > 0) {
+            badge.innerHTML = `⚠️ ${offlineWarteschlange.length} Fang/Fänge ungesichert auf dem Handy! <br>
+                               <button type="button" onclick="trySyncOfflineFange()" style="margin-top:8px; padding:6px 12px; background:#d68c45; color:white; border:none; border-radius:4px; font-weight:bold; cursor:pointer;">Jetzt zu Supabase senden 🚀</button>`;
+            badge.style.display = 'block';
+        } else {
+            badge.style.display = 'none';
+        }
+    }
     }
 
     function updateVerbleibOptions(modus) {
