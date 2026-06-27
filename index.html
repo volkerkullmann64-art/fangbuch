@@ -7,106 +7,140 @@
     <!-- Supabase JavaScript Bibliothek laden -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f4f7f6; }
-        h2, h3 { color: #2c3e50; text-align: center; }
-        .tab-nav { display: flex; justify-content: space-around; margin-bottom: 20px; }
-        .tab-btn { padding: 10px 20px; background-color: #bdc3c7; border: none; cursor: pointer; border-radius: 5px; font-weight: bold; }
-        .tab-btn.active { background-color: #2ecc71; color: white; }
-        .tab-content { display: none; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .tab-content.active { display: block; }
-        label { display: block; margin-top: 12px; font-weight: bold; color: #34495e; }
-        input, select, textarea { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-        button.btn-block { width: 100%; padding: 12px; background-color: #2ecc71; color: white; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; margin-top: 20px; }
+        body { font-family: Arial, sans-serif; max-width: 900px; margin: 0 auto; padding: 20px; background-color: #f4f7f6; }
+        h2 { color: #2c3e50; text-align: center; margin-bottom: 30px; }
+        
+        .login-box { background: #eef2f3; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #dcdde1; text-align: center; }
+        .login-box input { width: 250px; padding: 8px; margin-left: 10px; border: 1px solid #ccc; border-radius: 4px; }
+        
+        .main-container { display: flex; gap: 30px; }
+        .form-section { flex: 1; background: white; padding: 25px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .list-section { flex: 1; background: white; padding: 25px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        
+        h3 { color: #34495e; border-bottom: 2px solid #2ecc71; padding-bottom: 8px; margin-top: 0; }
+        
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; color: #2c3e50; margin-bottom: 5px; font-size: 14px; }
+        input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        
+        button.btn-block { width: 100%; padding: 12px; background-color: #2ecc71; color: white; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; font-weight: bold; margin-top: 10px; }
         button.btn-block:hover { background-color: #27ae60; }
-        .fang-item { padding: 12px; border-bottom: 1px solid #eee; margin-bottom: 5px; }
+        
+        .fang-item { padding: 12px; border-bottom: 1px solid #eee; margin-bottom: 8px; background: #fafafa; border-radius: 4px; }
         .fang-item:last-child { border-bottom: none; }
-        .fang-meta { font-size: 12px; color: #7f8c8d; }
+        .fang-meta { font-size: 12px; color: #7f8c8d; line-height: 1.5; }
     </style>
 </head>
 <body>
 
     <h2>🎣 Fangbuch ASV Landshut</h2>
 
-    <!-- Navigation für die Tabs -->
-    <div class="tab-nav">
-        <button class="tab-btn active" onclick="switchTab('eingabe')">Fang eintragen</button>
-        <button class="tab-btn" onclick="switchTab('liste'); loadMyCatches();">Meine Fänge</button>
+    <!-- E-Mail / Login Bereich oben drüber -->
+    <div class="login-box">
+        <label style="display:inline-block;"><strong>Angler E-Mail-Adresse:</strong></label>
+        <input type="email" id="angler_email" required placeholder="name@beispiel.de" oninput="loadMyCatches()">
     </div>
 
-    <!-- TAB 1: EINGABEFORMULAR -->
-    <div id="eingabe" class="tab-content active">
-        <form id="fangForm">
-            <label for="angler_email">Deine E-Mail-Adresse:</label>
-            <input type="email" id="angler_email" required placeholder="name@beispiel.de">
+    <!-- Das schöne Layout: Nebeneinander -->
+    <div class="main-container">
+        
+        <!-- LINKE SEITE: EINGABE -->
+        <div class="form-section">
+            <h3>Neuen Fang eintragen</h3>
+            <form id="fangForm">
+                <div class="form-group">
+                    <label for="datum">Datum:</label>
+                    <input type="date" id="datum" required>
+                </div>
 
-            <label for="datum">Datum:</label>
-            <input type="date" id="datum" required>
+                <div class="form-group">
+                    <label for="uhrzeit">Uhrzeit:</label>
+                    <input type="time" id="uhrzeit" required>
+                </div>
 
-            <label for="uhrzeit">Uhrzeit:</label>
-            <input type="time" id="uhrzeit" required>
+                <div class="form-group">
+                    <label for="fischart">Fischart:</label>
+                    <select id="fischart" required onchange="berechneGewicht()">
+                        <option value="">-- Bitte wählen --</option>
+                        <option value="Bachforelle">Bachforelle</option>
+                        <option value="Regenbogenforelle">Regenbogenforelle</option>
+                        <option value="Äsche">Äsche</option>
+                        <option value="Zander">Zander</option>
+                        <option value="Wels">Wels</option>
+                        <option value="Hecht">Hecht</option>
+                        <option value="Karpfen">Karpfen</option>
+                        <option value="Anderer Fisch">Anderer Fisch</option>
+                    </select>
+                </div>
 
-            <label for="fischart">Fischart:</label>
-            <select id="fischart" required>
-                <option value="">-- Bitte wählen --</option>
-                <option value="Bachforelle">Bachforelle</option>
-                <option value="Regenbogenforelle">Regenbogenforelle</option>
-                <option value="Äsche">Äsche</option>
-                <option value="Zander">Zander</option>
-                <option value="Wels">Wels</option>
-                <option value="Hecht">Hecht</option>
-                <option value="Karpfen">Karpfen</option>
-                <option value="Anderer Fisch">Anderer Fisch</option>
-            </select>
+                <div class="form-group">
+                    <label for="laenge">Länge (cm):</label>
+                    <input type="number" id="laenge" required min="1" oninput="berechneGewicht()">
+                </div>
 
-            <label for="laenge">Länge (cm):</label>
-            <input type="number" id="laenge" required min="1">
+                <div class="form-group">
+                    <label for="gewicht">Gewicht (g) <small style="color:#7f8c8d;">(wird automatisch geschätzt)</small>:</label>
+                    <input type="number" id="gewicht" required>
+                </div>
 
-            <label for="gewicht">Gewicht (g):</label>
-            <input type="number" id="gewicht" placeholder="Optional">
+                <div class="form-group">
+                    <label for="verbleib">Verbleib des Fisches:</label>
+                    <select id="verbleib">
+                        <option value="Entnommen">Entnommen</option>
+                        <option value="Zurückgesetzt">Zurückgesetzt (Catch & Release)</option>
+                    </select>
+                </div>
 
-            <label for="verbleib">Verbleib des Fisches:</label>
-            <select id="verbleib">
-                <option value="Entnommen">Entnommen</option>
-                <option value="Zurückgesetzt">Zurückgesetzt (Catch & Release)</option>
-            </select>
+                <div class="form-group">
+                    <label for="fangort">Fangplatz / Stelle:</label>
+                    <input type="text" id="fangort" placeholder="z.B. Vereinsheim, Wehr...">
+                </div>
 
-            <label for="fangort">Fangplatz / Stelle:</label>
-            <input type="text" id="fangort" placeholder="z.B. Vereinsheim, Wehr, km 42...">
+                <div class="form-group">
+                    <label for="wetter">Wetter:</label>
+                    <select id="wetter">
+                        <option value="Sonnig">Sonnig</option>
+                        <option value="Bewölkt">Bewölkt</option>
+                        <option value="Regen">Regen</option>
+                        <option value="Nebel">Nebel</option>
+                    </select>
+                </div>
 
-            <label for="wetter">Wetter:</label>
-            <select id="wetter">
-                <option value="Sonnig">Sonnig</option>
-                <option value="Bewölkt">Bewölkt</option>
-                <option value="Regen">Regen</option>
-                <option value="Nebel">Nebel</option>
-            </select>
+                <div class="form-group">
+                    <label for="luftdruck">Luftdruck (hPa):</label>
+                    <input type="number" id="luftdruck" placeholder="z.B. 1013">
+                </div>
 
-            <label for="luftdruck">Luftdruck (hPa):</label>
-            <input type="number" id="luftdruck" placeholder="z.B. 1013">
+                <div class="form-group">
+                    <label for="truebung">Wasser-Trübung:</label>
+                    <select id="truebung">
+                        <option value="Klar">Klar</option>
+                        <option value="Leicht getrübt">Leicht getrübt</option>
+                        <option value="Stark getrübt">Stark getrübt</option>
+                    </select>
+                </div>
 
-            <label for="truebung">Wasser-Trübung:</label>
-            <select id="truebung">
-                <option value="Klar">Klar</option>
-                <option value="Leicht getrübt">Leicht getrübt</option>
-                <option value="Stark getrübt / Hochwasser">Stark getrübt / Hochwasser</option>
-            </select>
+                <div class="form-group">
+                    <label for="notiz">Besondere Notizen / Köder:</label>
+                    <textarea id="notiz" rows="2" placeholder="Welcher Köder?..."></textarea>
+                </div>
 
-            <label for="notiz">Besondere Notizen / Köder:</label>
-            <textarea id="notiz" rows="3" placeholder="Welcher Köder? Wasserstand?..."></textarea>
+                <button type="submit" class="btn-block">🚀 Fang online speichern</button>
+            </form>
+        </div>
+        
+        <!-- RECHTE SEITE: LISTE -->
+        <div class="list-section">
+            <h3>📋 Meine persönlichen Fänge</h3>
+            <div id="catchesList" style="margin-top: 15px;">
+                <p style="text-align:center; color:#7f8c8d;">Bitte gib oben deine E-Mail-Adresse ein, um deine Fänge zu laden.</p>
+            </div>
+        </div>
 
-            <button type="submit" class="btn-block">🚀 Fang in Datenbank speichern</button>
-        </form>
-    </div>
-
-    <!-- TAB 2: PERSÖNLICHE LISTE -->
-    <div id="liste" class="tab-content">
-        <h3>📋 Deine persönlichen Fänge</h3>
-        <p style="font-size: 13px; color: #7f8c8d; text-align: center;">Es werden die Fänge der oben eingegebenen E-Mail-Adresse angezeigt.</p>
-        <div id="catchesList">Gib im ersten Tab deine E-Mail ein, um deine Fänge zu sehen.</div>
     </div>
 
     <script>
-        // Supabase Verbindung aufbauen mit deinen Daten
+        // Supabase Verbindung
         const SUPABASE_URL = "https://sb_publishable_Y0g8anBpKs3bsC85iado6w_rYske-SZ.supabase.co";
         const SUPABASE_KEY = "sb_publishable_Y0g8anBpKs3bsC85iado6w_rYske-SZ";
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -116,20 +150,39 @@
         document.getElementById('datum').value = heute.toISOString().split('T')[0];
         document.getElementById('uhrzeit').value = heute.toTimeString().split(' ')[0].substring(0,5);
 
-        // Tab-Wechsel Logik
-        function switchTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-            document.getElementById(tabId).classList.add('active');
-            event.target.classList.add('active');
+        // Automatische Gewichtsberechnung nach Fischart (Konditionsfaktor)
+        function berechneGewicht() {
+            const fischart = document.getElementById('fischart').value;
+            const laenge = parseFloat(document.getElementById('laenge').value);
+            const gewichtFeld = document.getElementById('gewicht');
+            
+            if (!fischart || !laenge) return;
+
+            let k = 1.0; // Standard-Faktor
+            if (fischart === "Bachforelle" || fischart === "Regenbogenforelle") k = 1.1;
+            else if (fischart === "Äsche") k = 0.8;
+            else if (fischart === "Zander") k = 0.85;
+            else if (fischart === "Hecht") k = 0.7;
+            else if (fischart === "Karpfen") k = 2.0;
+            else if (fischart === "Wels") k = 0.6;
+
+            // Formel: Gewicht = (Länge^3 * k) / 100
+            let berechnet = Math.round((Math.pow(laenge, 3) * k) / 100);
+            gewichtFeld.value = berechnet;
         }
 
         // Formular absenden -> In Supabase speichern
         document.getElementById('fangForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
+            const email = document.getElementById('angler_email').value;
+            if (!email) {
+                alert('Bitte trage zuerst oben deine E-Mail-Adresse ein!');
+                return;
+            }
+            
             const data = {
-                angler_email: document.getElementById('angler_email').value,
+                angler_email: email,
                 datum: document.getElementById('datum').value,
                 uhrzeit: document.getElementById('uhrzeit').value,
                 fischart: document.getElementById('fischart').value,
@@ -150,9 +203,10 @@
             } else {
                 alert('🎉 Fang erfolgreich in der Online-Datenbank gespeichert!');
                 document.getElementById('fangForm').reset();
-                // Datum wieder setzen
+                document.getElementById('angler_email').value = email; // E-Mail stehen lassen
                 document.getElementById('datum').value = heute.toISOString().split('T')[0];
                 document.getElementById('uhrzeit').value = heute.toTimeString().split(' ')[0].substring(0,5);
+                loadMyCatches(); // Liste sofort aktualisieren
             }
         });
 
@@ -162,11 +216,9 @@
             const listDiv = document.getElementById('catchesList');
             
             if (!email) {
-                listDiv.innerHTML = "<p style='color:red; text-align:center;'>Bitte trage zuerst im Formular deine E-Mail-Adresse ein!</p>";
+                listDiv.innerHTML = "<p style='text-align:center; color:#7f8c8d;'>Bitte gib oben deine E-Mail-Adresse ein, um deine Fänge zu laden.</p>";
                 return;
             }
-
-            listDiv.innerHTML = "Lädt Fänge...";
 
             const { data, error } = await _supabase
                 .from('faenge')
@@ -175,12 +227,12 @@
                 .order('datum', { ascending: false });
 
             if (error) {
-                listDiv.innerHTML = "Fehler beim Laden: " + error.message;
+                listDiv.innerHTML = "<span style='color:red;'>Fehler beim Laden: " + error.message + "</span>";
                 return;
             }
 
             if (data.length === 0) {
-                listDiv.innerHTML = "<p style='text-align:center;'>Noch keine Fänge für diese E-Mail eingetragen.</p>";
+                listDiv.innerHTML = "<p style='text-align:center; color:#7f8c8d;'>Noch keine Fänge für diese E-Mail in der Datenbank.</p>";
                 return;
             }
 
@@ -189,10 +241,10 @@
                 const item = document.createElement('div');
                 item.className = 'fang-item';
                 item.innerHTML = `
-                    <strong>${fang.fischart}</strong> - ${fang.laenge} cm ${fang.gewicht ? `(${fang.gewicht} g)` : ''}<br>
-                    <span class="fang-meta">📅 ${fang.datum} um ${fang.uhrzeit} Uhr | 📍 Ort: ${fang.fangort || 'Nicht angegeben'}</span><br>
-                    <span class="fang-meta">🌦️ ${fang.wetter}, ${fang.luftdruck ? `${fang.luftdruck} hPa` : 'Kein Luftdruck'}, Wasser: ${fang.truebung}</span>
-                    ${fang.notiz ? `<br><small>📝 <em>${fang.notiz}</em></small>` : ''}
+                    <strong>${fang.fischart}</strong> - ${fang.laenge} cm (${fang.gewicht} g)<br>
+                    <span class="fang-meta">📅 ${fang.datum} | ⏰ ${fang.uhrzeit} Uhr | 📍 ${fang.fangort || 'Kein Ort'}<br>
+                    🌦️ ${fang.wetter} | 🎈 ${fang.luftdruck ? `${fang.luftdruck} hPa` : '---'} | 🌊 ${fang.truebung}</span>
+                    ${fang.notiz ? `<br><small style='color:#555;'>📝 ${fang.notiz}</small>` : ''}
                 `;
                 listDiv.appendChild(item);
             });
