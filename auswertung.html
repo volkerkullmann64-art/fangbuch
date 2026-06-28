@@ -4,86 +4,27 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Meine Fangübersicht</title>
-    <!-- Supabase Bibliothek einbinden -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: #f5f5f5;
-            margin: 0;
-            padding: 10px;
-            color: #333;
-        }
-        .container {
-            max-width: 100%;
-            margin: 0 auto;
-        }
-        .header-bereich {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            max-width: 1200px;
-            margin: 0 auto 15px auto;
-            padding: 0 10px;
-        }
-        h2 {
-            color: #2e6f40;
-            margin: 0;
-            font-size: 20px;
-        }
-        .user-info {
-            font-size: 13px;
-            color: #666;
-            background: #e8ede9;
-            padding: 6px 12px;
-            border-radius: 20px;
-            border: 1px solid #cbdad0;
-        }
-        .user-info span {
-            font-weight: bold;
-            color: #2e6f40;
-        }
-        .tabellen-container {
-            background: white;
-            border-radius: 8px;
-            overflow-x: auto; 
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            -webkit-overflow-scrolling: touch;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            text-align: left;
-            font-size: 13px;
-            white-space: nowrap;
-        }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f5f5f5; margin: 0; padding: 10px; color: #333; }
+        .container { max-width: 100%; margin: 0 auto; }
+        .header-bereich { display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto 15px auto; padding: 0 10px; }
+        h2 { color: #2e6f40; margin: 0; font-size: 20px; }
+        .user-info { font-size: 13px; color: #666; background: #e8ede9; padding: 6px 12px; border-radius: 20px; border: 1px solid #cbdad0; }
+        .tabellen-container { background: white; border-radius: 8px; overflow-x: auto; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; white-space: nowrap; }
         thead tr { background: #333; color: white; }
-        th, td { 
-            padding: 10px 12px; 
-            border-bottom: 1px solid #eee;
-        }
-        tbody tr:last-child td { border-bottom: none; }
+        th, td { padding: 10px 12px; border-bottom: 1px solid #eee; }
         tbody tr:nth-child(even) { background-color: #f9f9f9; }
-        
-        .zurueck-link {
-            display: block;
-            text-align: center;
-            margin-top: 25px;
-            color: #666;
-            text-decoration: none;
-            font-size: 14px;
-            padding: 10px;
-        }
+        .zurueck-link { display: block; text-align: center; margin-top: 25px; color: #666; text-decoration: none; font-size: 14px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    
     <div class="header-bereich">
         <h2>📊 Meine Fangübersicht</h2>
-        <!-- Hier zeigen wir an, welcher Angler gerade eingeloggt ist -->
-        <div class="user-info" id="aktueller-angler">Angler: <span id="angler-name">Lade...</span></div>
+        <div class="user-info">Angler: <span id="angler-name">Lade...</span></div>
     </div>
 
     <div class="tabellen-container">
@@ -91,6 +32,7 @@
             <thead>
                 <tr>
                     <th>Datum</th>
+                    <th>E-Mail</th>
                     <th>Uhrzeit</th>
                     <th>Fangort</th>
                     <th>Fischart</th>
@@ -104,128 +46,73 @@
                 </tr>
             </thead>
             <tbody id="fang-tabelle-body">
-                <tr>
-                    <td colspan="11" style="text-align: center; color: #888; padding: 20px;">Prüfe Anmeldung...</td>
-                </tr>
+                <tr><td colspan="12" style="text-align: center; padding: 20px;">Prüfe Anmeldung...</td></tr>
             </tbody>
         </table>
     </div>
 
-    <a href="index.html" class="zurueck-link">⬅ Zurück zur Fang-Eintragung</a>
-
+    <a href="index.html" class="zurueck-link">⬅ Zurück zum Dashboard</a>
 </div>
 
 <script>
-    
-    
+    // Supabase Konfiguration
+    const SUPABASE_URL = "https://eadleysrezkhxxbhqbdx.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_Y0g8anBpKs3bsC85iado6w_rYske-SZ";
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     window.onload = function() {
-        pruefeAnglerUndLadeDaten();
-    };
+        // Holt die E-Mail aus dem Session-Speicher
+        let anglerEmail = sessionStorage.getItem('userEmail');
 
-    async function pruefeAnglerUndLadeDaten() {
-        // Wir schauen nach, ob die E-Mail schon im Speicher des Handys hinterlegt ist
-        let anglerEmail = localStorage.getItem('angemeldeter_angler');
-
-        // Wenn nicht, fragen wir den Angler einmalig über ein Eingabefenster danach
         if (!anglerEmail) {
-            anglerEmail = prompt("Bitte gib deine Angler-E-Mail-Adresse ein, um deine Fänge zu sehen:");
-            
-            if (anglerEmail && anglerEmail.trim() !== "") {
-                anglerEmail = anglerEmail.trim().toLowerCase();
-                localStorage.setItem('angemeldeter_angler', anglerEmail); // Für das nächste Mal merken
-            } else {
-                document.getElementById('fang-tabelle-body').innerHTML = 
-                    `<tr><td colspan="11" style="text-align: center; color: #d68c45; padding: 20px;">Keine E-Mail eingegeben. Bitte lade die Seite neu, um dich anzumelden.</td></tr>`;
-                document.getElementById('angler-name').innerText = "Nicht angemeldet";
-                return;
-            }
+            alert("Du bist nicht angemeldet!");
+            location.href = 'index.html';
+            return;
         }
 
-        // E-Mail oben im grünen Feld anzeigen
         document.getElementById('angler-name').innerText = anglerEmail;
-
-        // Jetzt laden wir die Fänge – aber NUR für diesen Angler!
         ladeFaengeFuerAngler(anglerEmail);
-    }
+    };
 
     async function ladeFaengeFuerAngler(email) {
         try {
-            // Holt alle Fänge aus deiner Tabelle, sortiert nach Datum (neueste zuerst)
-            // UND filtert exakt nach der E-Mail des Anglers!
             const { data, error } = await _supabase
                 .from('fangbuch-asv-langschede')
                 .select('*')
-                .eq('angler_email', email)
+                .eq('angler_email', email) // Hier wird auf deine E-Mail gefiltert
                 .order('datum', { ascending: false });
 
             if (error) throw error;
 
             const tbody = document.getElementById('fang-tabelle-body');
-
             if (!data || data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="11" style="text-align: center; color: #888; padding: 20px;">Du hast noch keine Fänge unter dieser E-Mail eingetragen.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="12" style="text-align: center; padding: 20px;">Keine Fänge unter dieser E-Mail gefunden.</td></tr>`;
                 return;
             }
 
-            tbody.innerHTML = ''; // Platzhalter löschen
-            
+            tbody.innerHTML = ''; 
             data.forEach(fang => {
-                let deutschesDatum = '-';
-                try {
-                    if (fang.datum && fang.datum.includes('-')) {
-                        const teile = fang.datum.split('-');
-                        deutschesDatum = `${teile[2]}.${teile[1]}.${teile[0]}`;
-                    } else if (fang.datum) {
-                        deutschesDatum = fang.datum;
-                    }
-                } catch (e) {
-                    deutschesDatum = fang.datum || '-';
-                }
-
-                let saubereUhrzeit = '-';
-                try {
-                    if (fang.uhrzeit) {
-                        saubereUhrzeit = fang.uhrzeit.toString();
-                        if (saubereUhrzeit.length > 5) {
-                            saubereUhrzeit = saubereUhrzeit.substring(0, 5);
-                        }
-                    }
-                } catch (e) {
-                    saubereUhrzeit = fang.uhrzeit || '-';
-                }
-
-                const laengeAnzeige = fang.laenge ? fang.laenge + ' cm' : '-';
-                const gewichtAnzeige = fang.gewicht ? fang.gewicht + ' kg' : '-';
-                const luftdruckAnzeige = fang.luftdruck ? fang.luftdruck + ' hPa' : '-';
-
                 tbody.innerHTML += `
                     <tr>
-                        <td>${deutschesDatum}</td>
-                        <td>${saubereUhrzeit}</td>
+                        <td>${fang.datum || '-'}</td>
+                        <td style="font-size: 11px; color: #555;">${fang.angler_email || '-'}</td>
+                        <td>${fang.uhrzeit ? fang.uhrzeit.substring(0,5) : '-'}</td>
                         <td>${fang.fangort || '-'}</td>
-                        <td style="font-weight: bold; color: #2e6f40;">${fang.fischart || 'Unbekannt'}</td>
-                        <td>${laengeAnzeige}</td>
-                        <td>${gewichtAnzeige}</td>
+                        <td style="font-weight: bold; color: #2e6f40;">${fang.fischart || '-'}</td>
+                        <td>${fang.laenge ? fang.laenge + ' cm' : '-'}</td>
+                        <td>${fang.gewicht ? fang.gewicht + ' kg' : '-'}</td>
                         <td>${fang.verbleib || '-'}</td>
                         <td>${fang.wetter || '-'}</td>
-                        <td>${luftdruckAnzeige}</td>
+                        <td>${fang.luftdruck ? fang.luftdruck + ' hPa' : '-'}</td>
                         <td>${fang.truebung || '-'}</td>
-                        <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis;" title="${fang.notiz || ''}">${fang.notiz || '-'}</td>
+                        <td>${fang.notiz || '-'}</td>
                     </tr>
                 `;
             });
-
         } catch (fehler) {
-            console.error('Fehler beim Laden:', fehler.message);
-            document.getElementById('fang-tabelle-body').innerHTML = 
-                `<tr><td colspan="11" style="text-align: center; color: red; padding: 20px;">Fehler beim Laden: ${fehler.message || fehler}</td></tr>`;
+            document.getElementById('fang-tabelle-body').innerHTML = `<tr><td colspan="12" style="color: red; padding: 20px;">Fehler: ${fehler.message}</td></tr>`;
         }
     }
-const SUPABASE_URL = "https://eadleysrezkhxxbhqbdx.supabase.co";
-const SUPABASE_KEY = "sb_publishable_Y0g8anBpKs3bsC85iado6w_rYske-SZ";
-const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
 </script>
 
 </body>
