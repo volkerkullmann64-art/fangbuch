@@ -243,15 +243,7 @@
 <div id="sync-status" class="sync-badge">⚠️ 0 Fänge warten auf Internetverbindung zur Übertragung...</div>
 
 <div class="container">
-    <!-- 1. LOGIN MASKE -->
-    <!-- <div id="login-section"> -->
-        <!-- <h1>Vereins-Fangbuch</h1> -->
-        <!-- <div class="form-group"> -->
-            <!-- <label for="user-email">E-Mail-Adresse zur Anmeldung</label> -->
-            <!-- <input type="email" id="user-email" placeholder="beispiel@anglerverein.de" required> -->
-        <!-- </div> -->
-        <!-- <button class="submit-btn" onclick="performLogin()">Anmelden</button> -->
-    <!-- </div> -->
+   
 
     <!-- 2. HAUPT-EINGABEMASKE -->
     <div id="form-section" class="hidden">
@@ -566,6 +558,7 @@ window.addEventListener('load', function() {
             istWarnung = true;
             aktuellerModus = "invasiv";
         }
+        
         else if (daten.schonzeit && datumVal) {
             const wahlDatum = new Date(datumVal);
             const m = wahlDatum.getMonth();
@@ -586,6 +579,10 @@ window.addEventListener('load', function() {
             }
         }
 
+
+
+
+        
         if (!isNaN(laenge) && laenge > 0) {
             if (!daten.geschuetzt && fischart !== "Nase" && !daten.invasiv && daten.mass > 0 && laenge < daten.mass) {
                 infoTexte.push(`⚠️ Untermaßig! (Mindestmaß NRW: ${daten.mass} cm)`);
@@ -642,37 +639,33 @@ window.addEventListener('load', function() {
             }).catch(() => {});
     }
 
-    // function performLogin() {
-        // const email = document.getElementById('user-email').value;
-        // if(email.includes('@')) {
-            // document.getElementById('login-section').classList.add('hidden');
-            // document.getElementById('form-section').classList.remove('hidden');
-            // initFormDefaults();
-            // triggerAutomaticWeatherFetch();
-            // trySyncOfflineFange();
-        // } else {
-            // alert('Bitte gib eine gültige E-Mail-Adresse ein.');
-        // }
-    // }
-
-    async function saveFang() {
-    console.log("Speichern-Knopf wurde gedrückt!");
     
-    try {
-        const fangDaten = {
-            fischart: document.getElementById('fischart')?.value || '',
-            laenge: parseFloat(document.getElementById('laenge')?.value) || 0,
-            gewicht: parseFloat(document.getElementById('gewicht')?.value) || 0,
-            datum: document.getElementById('datum')?.value || '',
-            uhrzeit: document.getElementById('uhrzeit')?.value || '',
-            verbleib: document.getElementById('verbleib')?.value || '',
-            notiz: document.getElementById('notiz')?.value || '',
-            angler_email: document.getElementById('user-email')?.value || localStorage.getItem('userEmail') || 'v@v.com',
-            wetter: document.getElementById('wetter')?.value || '',
-            luftdruck: document.getElementById('luftdruck')?.value || '',
-            fangort: document.getElementById('fangort')?.value || '',
-            truebung: document.getElementById('truebung')?.value || ''
-        };
+    async function saveFang() {
+        console.log("Speichern-Knopf wurde gedrückt!");
+        
+        // Hole die E-Mail frisch aus der aktuellen Session
+        const aktuelleEmail = sessionStorage.getItem('userEmail');
+        
+        if (!aktuelleEmail) {
+            alert("Fehler: Du bist nicht angemeldet! Bitte melde dich auf der Startseite an.");
+            return;
+        }
+
+        try {
+            const fangDaten = {
+                fischart: document.getElementById('fischart')?.value || '',
+                laenge: parseFloat(document.getElementById('laenge')?.value) || 0,
+                gewicht: parseFloat(document.getElementById('gewicht')?.value) || 0,
+                datum: document.getElementById('datum')?.value || '',
+                uhrzeit: document.getElementById('uhrzeit')?.value || '',
+                verbleib: document.getElementById('verbleib')?.value || '',
+                notiz: document.getElementById('notiz')?.value || '',
+                angler_email: aktuelleEmail, // <-- Hier ist jetzt die Lösung!
+                wetter: document.getElementById('wetter')?.value || '',
+                luftdruck: document.getElementById('luftdruck')?.value || '',
+                fangort: document.getElementById('fangort')?.value || '',
+                truebung: document.getElementById('truebung')?.value || ''
+            };
 
         if (!fangDaten.fischart || !fangDaten.datum) {
             alert("Bitte gib mindestens die Fischart und das Datum an!");
