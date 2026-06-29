@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ASV Fangbuch</title>
+    <!-- Supabase Client Bibliothek laden -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background-color: #e8f5e9; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
         .container { background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; width: 320px; }
@@ -19,6 +21,11 @@
     </div>
 
     <script>
+        // Supabase initialisieren (Bitte URL und Key aus deiner anderen Datei einfügen!)
+        const SUPABASE_URL = "https://eadleysrezkhxxbhqbdx.supabase.co";
+        const SUPABASE_KEY = "sb_publishable_Y0g8anBpKs3bsC85iado6w_rYske-SZ";
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
         // Zeige die Auswahl-Buttons
         function showDashboard() {
             document.getElementById('app').innerHTML = `
@@ -27,6 +34,7 @@
                 <button class="btn" onclick="location.href='auswertung.html'">📊 Auswertung</button>
                 <button class="btn" onclick="location.href='galerie.html'">📸 Galerie</button>
                 <button class="btn" onclick="location.href='partner.html'">🤝 Partner</button>
+                <button class="btn" style="background-color: #757575; margin-top: 25px;" onclick="beendeProgramm()">❌ Programm beenden</button>
             `;
         }
 
@@ -40,23 +48,79 @@
         }
 
         // Login Logik
-        function performLogin() {
-            const emailInput = document.getElementById('email').value.trim();
+        async function performLogin() {
+            const emailInput = document.getElementById('email').value.trim().toLowerCase();
             if(emailInput !== "") {
-                // Hier speichern wir die E-Mail direkt unter 'userEmail'
-                sessionStorage.setItem('userEmail', emailInput.toLowerCase());
-                // Wir setzen zusätzlich den Status auf 'ja'
-                sessionStorage.setItem('angemeldet', 'ja');
-                showDashboard();
+                
+                // Abgleich mit der Datenbank 'mitglieder'
+                const { data, error } = await _supabase
+                    .from('mitglieder')
+                    .select('email, kennung')
+                    .eq('email', emailInput)
+                    .single();
+
+                if (error || !data) {
+                    alert("Zugriff verweigert: E-Mail nicht registriert.");
+                } else {
+                    // Falls die Kennung auf 0000 steht, blockieren
+                    if (data.kennung === "0000") {
+                        alert("Dieses Konto wurde zurückgesetzt. Bitte wende dich an den Admin.");
+                        return;
+                    }
+
+                    // E-Mail gefunden, Kennung lokal und Session setzen
+                    if (data.kennung) {
+                        localStorage.setItem('userKennung', data.kennung);
+                        sessionStorage.setItem('userEmail', emailInput);
+                        sessionStorage.setItem('angemeldet', 'ja');
+                        showDashboard();
+                    } else {
+                        alert("Fehler: Keine Kennung hinterlegt.");
+                    }
+                }
+
             } else {
                 alert("Bitte E-Mail eingeben");
             }
         }
 
-        // Beim Starten der Seite prüfen
-        window.onload = function() {
-            if (sessionStorage.getItem('angemeldet') === 'ja') {
-                showDashboard();
+        // Funktion zum Beenden des Programms
+        function beendeProgramm() {
+            sessionStorage.clear(); // Löscht die temporäre Anmeldung für die Unterseiten
+            
+            // Erst versuchen wir das Fenster zu schließen
+            window.close();
+            
+            // Falls der Browser das Schließen blockiert, zeigen wir eine saubere Verabschiedung
+            document.getElementById('app').innerHTML = `
+                <h2>Auf Wiedersehen!</h2>
+                <p style="color: #666; margin-top: 20px;">Das Programm wurde sicher beendet.</p>
+                <p style="color: #999; font-size: 14px;">Du kannst diesen Browser-Tab jetzt schließen.</p>
+            `;
+        }
+
+        // Beim Starten della Seite prüfen
+        window.onload = async function() {
+            const gespeicherteKennung = localStorage.getItem('userKennung');
+
+            if (gespeicherteKennung) {
+                // Live-Prüfung gegen Supabase wegen der 0000-Steuerung
+                const { data, error } = await _supabase
+                    .from('mitglieder')
+                    .select('email, kennung')
+                    .eq('kennung', gespeicherteKennung)
+                    .maybeSingle();
+
+                if (error || !data || data.kennung === "0000") {
+                    localStorage.clear();
+                    sessionStorage.clear();
+                    showLogin();
+                } else {
+                    // Kennung ist gültig -> befeuere die Session für die anderen HTML-Seiten
+                    sessionStorage.setItem('userEmail', data.email);
+                    sessionStorage.setItem('angemeldet', 'ja');
+                    showDashboard();
+                }
             } else {
                 showLogin();
             }
