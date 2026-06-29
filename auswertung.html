@@ -32,7 +32,6 @@
             <thead>
                 <tr>
                     <th>Datum</th>
-                    <th>E-Mail</th>
                     <th>Uhrzeit</th>
                     <th>Fangort</th>
                     <th>Fischart</th>
@@ -95,7 +94,6 @@
                 tbody.innerHTML += `
                     <tr>
                         <td>${fang.datum || '-'}</td>
-                        <td style="font-size: 11px; color: #555;">${fang.angler_email || '-'}</td>
                         <td>${fang.uhrzeit ? fang.uhrzeit.substring(0,5) : '-'}</td>
                         <td>${fang.fangort || '-'}</td>
                         <td style="font-weight: bold; color: #2e6f40;">${fang.fischart || '-'}</td>
